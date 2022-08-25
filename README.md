@@ -1,2 +1,2 @@
-# lab-agile-planning
-This repository contains the lab for Agile planning
+# DevOps and Software Engineering materials
+This repository projects and material for Coursera classes
