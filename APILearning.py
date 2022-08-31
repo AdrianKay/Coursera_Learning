@@ -2,6 +2,8 @@
 !pip install plotly
 !pip install mplfinance
 
+# Pandas is actually set of software components , much of which is not even written in Python.
+
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -13,14 +15,29 @@ from mplfinance.original_flavor import candlestick2_ohlc
 
 dict_={'a':[11,21,31],'b':[12,22,32]}
 
+# When you create a Pandas object with the Dataframe constructor in API lingo, this is an "instance". 
+# The data in the dictionary is passed along to the pandas API. You then use the dataframe to communicate with the API.
+
 df=pd.DataFrame(dict_)
 type(df)
 
+# When you call the method head the dataframe communicates with the API displaying the first few rows of the dataframe.
+
 df.head()
+
+# When you call the method mean,the API will calculate the mean and return the value.
 
 df.mean()
 
 # REST API
+
+# Rest API’s function by sending a request, the request is communicated via HTTP message. 
+# The HTTP message usually contains a JSON file. This contains instructions for what operation we would like the service or resource to perform. 
+# In a similar manner, API returns a response, via an HTTP message, this response is usually contained within a JSON.
+# In cryptocurrency a popular method to display the movements of the price of a currency.
+
+# Lets start off by getting the data we need. Using the get_coin_market_chart_by_id(id, vs_currency, days). 
+# id is the name of the coin you want, vs_currency is the currency you want the price in, and days is how many days back from today you want.
 
 cg = CoinGeckoAPI()
 
@@ -28,13 +45,25 @@ bitcoin_data = cg.get_coin_market_chart_by_id(id='bitcoin', vs_currency='usd', d
 
 type(bitcoin_data )
 
+# The response we get is in the form of a JSON which includes the price, market caps, and total volumes along with timestamps for each observation. 
+# We are focused on the prices so we will select that data.
+
 bitcoin_price_data = bitcoin_data['prices']
 
 bitcoin_price_data[0:5]
 
 data = pd.DataFrame(bitcoin_price_data, columns=['TimeStamp', 'Price'])
 
+# Now that we have the DataFrame we will convert the timestamp to datetime and save it as a column called Date. 
+# We will map our unix_to_datetime to each timestamp and convert it to a readable datetime.
+
 data['date'] = data['TimeStamp'].apply(lambda d: datetime.date.fromtimestamp(d/1000.0))
+
+# Using this modified dataset we can now group by the Date and find the min, max, open, and close for the candlesticks.
+
+candlestick_data = data.groupby(data.date, as_index=False).agg({"Price": ['min', 'max', 'first', 'last']})
+
+# Finally we are now ready to use plotly to create our Candlestick Chart.
 
 fig = go.Figure(data=[go.Candlestick(x=candlestick_data['date'],
                 open=candlestick_data['Price']['first'], 
